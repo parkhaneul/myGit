@@ -21,7 +21,8 @@ class FirstViewController: UIViewController {
         super.viewDidAppear(animated)
         
         connect = WebConnection()
-        connect.getJSON(url: gitURL.base.rawValue + "/applications/grants")
+        connect.getResponse(url: gitURL.login.rawValue)
+        //connect.getJSON(url: gitURL.base.rawValue + "/applications/grants")
     }
 }
 

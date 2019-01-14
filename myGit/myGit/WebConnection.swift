@@ -9,7 +9,8 @@
 import Foundation
 
 class WebConnection : NSObject{
-    var data : [String : Any]!
+    let parser = JsonParser()
+    let session = URLSession.shared
     
     override init(){
         super.init()
@@ -17,12 +18,17 @@ class WebConnection : NSObject{
     
     func getJSON(url : String){
         urlRequest(url: url, callback: {(json) -> () in
-            print(json)
+            self.parser.jsonDescription(json: json)
+        })
+    }
+    
+    func getResponse(url : String){
+        urlResponse(url: url, callback: {(response) -> () in
+            print(response)
         })
     }
     
     private func urlRequest(url : String, callback : (([String:Any])->())?){
-        let session = URLSession.shared
         let request = URLRequest(url : URL(string: url)!)
         var jsonData : [String : Any]!
         
@@ -30,6 +36,14 @@ class WebConnection : NSObject{
                 jsonData = try! JSONSerialization.jsonObject(with: data!, options: []) as? [String : Any]
                 callback!(jsonData)
             })
+        task.resume()
+    }
+    
+    private func urlResponse(url : String, callback : ((URLResponse)->())?){
+        let request = URLRequest(url : URL(string: url)!)
+        let task = session.dataTask(with: request, completionHandler: {data, response, error -> Void in
+            callback!(response!)
+        })
         task.resume()
     }
 }

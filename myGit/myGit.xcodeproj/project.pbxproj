@@ -15,6 +15,7 @@
 		2800D81421EC3F3700B31D1C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2800D81221EC3F3700B31D1C /* LaunchScreen.storyboard */; };
 		2800D81E21EC434300B31D1C /* WebConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2800D81D21EC434300B31D1C /* WebConnection.swift */; };
 		2800D82021EC60E000B31D1C /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2800D81F21EC60E000B31D1C /* File.swift */; };
+		28E00F7621EC705D007C67B5 /* JsonParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E00F7521EC705D007C67B5 /* JsonParser.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		2800D81521EC3F3700B31D1C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2800D81D21EC434300B31D1C /* WebConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebConnection.swift; sourceTree = "<group>"; };
 		2800D81F21EC60E000B31D1C /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		28E00F7521EC705D007C67B5 /* JsonParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonParser.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +71,7 @@
 				2800D81521EC3F3700B31D1C /* Info.plist */,
 				2800D81D21EC434300B31D1C /* WebConnection.swift */,
 				2800D81F21EC60E000B31D1C /* File.swift */,
+				28E00F7521EC705D007C67B5 /* JsonParser.swift */,
 			);
 			path = myGit;
 			sourceTree = "<group>";
@@ -146,6 +149,7 @@
 			files = (
 				2800D82021EC60E000B31D1C /* File.swift in Sources */,
 				2800D81E21EC434300B31D1C /* WebConnection.swift in Sources */,
+				28E00F7621EC705D007C67B5 /* JsonParser.swift in Sources */,
 				2800D80C21EC3F3500B31D1C /* SecondViewController.swift in Sources */,
 				2800D80821EC3F3500B31D1C /* AppDelegate.swift in Sources */,
 				2800D80A21EC3F3500B31D1C /* FirstViewController.swift in Sources */,
