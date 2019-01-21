@@ -7,13 +7,3 @@
 //
 
 import Foundation
-
-class JsonParser{
-    func jsonDescription(json : [String : Any]){
-        print("{")
-        for line in json{
-            print("\t" + line.key + " : " + (line.value as? String ?? (line.value as AnyObject).description))
-        }
-        print("}")
-    }
-}
