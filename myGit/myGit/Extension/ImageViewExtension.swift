@@ -18,14 +18,21 @@ extension UIImageView{
                 let data = data, error == nil,
                 let image = UIImage(data: data)
                 else {return}
-            DispatchQueue.global().async() {
+            DispatchQueue.main.async() {
                 self.image = image
             }
         }).resume()
     }
+    
     func downloaded(from link: String, contentMode mode: UIView.ContentMode = .scaleAspectFit) {
         guard let url = URL(string: link) else { return }
         downloaded(from: url, contentMode: mode)
+    }
+    
+    func circularImage(){
+        self.layer.masksToBounds = false
+        self.layer.cornerRadius = self.layer.bounds.height/2
+        self.clipsToBounds = true
     }
 }
 

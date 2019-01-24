@@ -8,8 +8,8 @@
 
 import Foundation
 
-class users : CustomInfoType{
-    var data : Dictionary<String,Any> = [
+struct Users : CustomInfoType{
+    var data : JSON = [
         "login": "",
         "id": 0,
         "node_id": "",
@@ -43,7 +43,7 @@ class users : CustomInfoType{
         "updated_at": ""
     ]
     
-    required init(json: Dictionary<String, Any>) {
+    init(_ json: JSON) {
         let json = json
         for (key,value) in json{
             if data.keys.contains(key){

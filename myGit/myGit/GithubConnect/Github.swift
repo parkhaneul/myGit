@@ -23,6 +23,21 @@ class Github{
         network = NetworkAPI()
     }
     
+    public func get(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+        let (newHeaders, newParameters) = addAuthenticationIfNeeded(headers: headers, parameters: parameters)
+        network?.get(url: full_path, parameters: newParameters, headers: newHeaders, completion: {(data,_,error) in
+            guard let data = data else {
+                completion(nil,error)
+                return
+            }
+            do{
+                completion(data,error)
+            } catch{
+                completion(nil,error)
+            }
+        })
+    }
+    
     public func get(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
         let (newHeaders, newParameters) = addAuthenticationIfNeeded(headers: headers, parameters: parameters)
         network?.get(url: gitURL.base.rawValue + path, parameters: newParameters, headers: newHeaders, completion: {(data,_,error) in
@@ -41,6 +56,9 @@ class Github{
     func addAuthenticationIfNeeded(headers: [String : String]?, parameters: [String : String]?) -> (headers: [String : String]?, parameters: [String : String]?)
     {
         var newHeaders = headers
+        if newHeaders == nil{
+            newHeaders = defaultHeaders
+        }
         var newParameters = parameters
         if let authentication = self.authentication {
             if authentication.type == .headers {

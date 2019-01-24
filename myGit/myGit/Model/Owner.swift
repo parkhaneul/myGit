@@ -8,12 +8,14 @@
 
 import Foundation
 
+typealias JSON = Dictionary<String,Any>
+
 protocol CustomInfoType {
-    init(json : Dictionary<String,Any>)
+    init(_ json : JSON)
 }
 
 struct Owner : CustomInfoType{
-    var data : Dictionary<String,Any> = [
+    var data : JSON = [
         "login" : "",
         "id" : 0,
         "node_id" : "",
@@ -34,7 +36,7 @@ struct Owner : CustomInfoType{
         "type" : "",
         "site_admin" : false
     ]
-    init(json : Dictionary<String,Any>){
+    init(_ json : JSON){
         let json = json
         for (key,value) in json{
             if data.keys.contains(key){

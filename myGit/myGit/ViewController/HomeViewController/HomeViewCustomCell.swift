@@ -10,9 +10,11 @@ import UIKit
 
 class HomeViewCustomCell : UITableViewCell{
     @IBOutlet weak var profileImage: UIImageView!
-    @IBOutlet weak var userName: UILabel!
+    @IBOutlet weak var nameText: UILabel!
     @IBOutlet weak var mainText: UILabel!
     @IBOutlet weak var dateText: UILabel!
+
+    var data : Repository = Repository([:])
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
