@@ -9,7 +9,7 @@
 import Foundation
 
 class GithubAPI : Github{
-    let userName = "ReactiveX"///*"parkhaneul"*/"mojombo"
+    let userName = "parkhaneul"//"mojombo"
     
     public func getUser(username : String,completion: @escaping(Data?, Error?) -> Void) {
         let encodedUsername = username.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!

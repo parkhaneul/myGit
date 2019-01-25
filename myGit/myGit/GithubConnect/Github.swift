@@ -32,7 +32,7 @@ class Github{
             }
             do{
                 completion(data,error)
-            } catch{
+            }catch{
                 completion(nil,error)
             }
         })
