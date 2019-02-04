@@ -8,31 +8,19 @@
 
 import Foundation
 
-class Request{
+struct Request{
     private var url : String
     private var method : RequestMethod
-    private var parameters : [String : String]? = nil
-    private var headers : [String : String]? = nil
-    private var body : Data? = nil
+    private var parameters : [String : String]?
+    private var headers : [String : String]?
+    private var body : Data?
     
-    public init(url : String, method : RequestMethod){
+    public init(url : String, method : RequestMethod, parameters : [String:String]? = nil, headers : [String:String]? = nil, body : Data? = nil){
         self.url = url
         self.method = method
-    }
-    
-    public func parameters(parameters : [String : String]?) -> Request{
         self.parameters = parameters
-        return self
-    }
-    
-    public func headers(headers : [String : String]?) -> Request{
         self.headers = headers
-        return self
-    }
-    
-    public func body(body : Data?) -> Request{
         self.body = body
-        return self
     }
     
     public func request() -> (request : URLRequest?, error : Error?){

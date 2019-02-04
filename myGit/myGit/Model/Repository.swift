@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Repository : CustomInfoType{
+struct Repository : CustomInfoType, Equatable{
     var data : JSON = [
         "id" : 0,
         "node_id" : "",
@@ -86,14 +86,15 @@ struct Repository : CustomInfoType{
         "forks" : 0,
         "open_issues" : 0,
         "watchers" : 0,
-        "default_branch" : ""
+        "default_branch" : "",
+        "state" : "Owner" // custom option
     ]
     
     init(_ json: JSON) {
         let json = json
         for (key,value) in json{
             if data.keys.contains(key){
-                if(key == "owner"){
+                if(key == "owner" && !(value is NSNull)){
                     data[key] = Owner(value as! JSON)
                 }
                 data[key] = value
@@ -101,5 +102,17 @@ struct Repository : CustomInfoType{
                 print("Repository data [" + key + "] is not mapping")
             }
         }
+    }
+    
+    static func == (lhs: Repository, rhs: Repository) -> Bool {
+        return (lhs.data["full_name"] as! String) == (rhs.data["full_name"] as! String)
+    }
+    
+    func get(_ key : String) -> Any?{
+        if data.keys.contains(key) && !(data[key] is NSNull){
+            return data[key]
+        }
+        
+        return nil
     }
 }

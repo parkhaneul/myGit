@@ -8,7 +8,7 @@
 
 import UIKit
 
-let authentication : Authentication = TokenAuthentication(token: auth().access_token)
+let shared_authentication : Authentication = TokenAuthentication(token: auth().access_token)
 
 class LoginViewController : UIViewController{
     override func viewDidLoad() {

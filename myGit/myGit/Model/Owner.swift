@@ -12,6 +12,7 @@ typealias JSON = Dictionary<String,Any>
 
 protocol CustomInfoType {
     init(_ json : JSON)
+    func get(_ key : String) -> Any?
 }
 
 struct Owner : CustomInfoType{
@@ -36,6 +37,7 @@ struct Owner : CustomInfoType{
         "type" : "",
         "site_admin" : false
     ]
+    
     init(_ json : JSON){
         let json = json
         for (key,value) in json{
@@ -45,5 +47,13 @@ struct Owner : CustomInfoType{
                 print("Owner data [" + key + "] is not mapping")
             }
         }
+    }
+    
+    func get(_ key : String) -> Any?{
+        if data.keys.contains(key) && !(data[key] is NSNull){
+            return data[key]
+        }
+        
+        return nil
     }
 }

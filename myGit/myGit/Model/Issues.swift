@@ -10,7 +10,6 @@ import Foundation
 
 struct Issues : CustomInfoType{
     var data : JSON = [
-        "repoName" : "", //add setting
         "id": 0,
         "node_id": "",
         "url": "",
@@ -42,34 +41,37 @@ struct Issues : CustomInfoType{
     init(_ json: JSON) {
         let json = json
         for (key,value) in json{
-            if data.keys.contains(key) && !(value is NSNull){
-                if(key == "user" || key == "assignee"){
-                    data[key] = Owner(value as! JSON)
-                } else if(key == "labels"){
-                    for d in (value as! [JSON]){
-                        var m = data[key] as! [Labels]
-                        m.append(Labels(d))
+            if data.keys.contains(key){
+                if !(value is NSNull){
+                    if(key == "user" || key == "assignee") { data[key] = Owner(value as! JSON) }
+                    else if(key == "milestone"){ data[key] = MileStone(value as! JSON) }
+                    else if(key == "pull_request"){ data[key] = Pull_Request(value as! JSON) }
+                    else if(key == "repository"){ data[key] = Repository(value as! JSON) }
+                    else if(key == "labels"){
+                        for d in (value as! [JSON]){
+                            var m = data[key] as! [Labels]
+                            m.append(Labels(d))
+                        }
                     }
-                } else if(key == "milestone"){
-                    data[key] = MileStone(value as! JSON)
-                } else if(key == "pull_request"){
-                    data[key] = Pull_Request(value as! JSON)
-                } else if(key == "repository"){
-                    data[key] = Repository(value as! JSON)
-                } else if(key == "assignees"){
-                    for d in (value as! [JSON]){
-                        var m = data[key] as! [Owner]
-                        m.append(Owner(d))
+                    else if(key == "assignees"){
+                        for d in (value as! [JSON]){
+                            var m = data[key] as! [Owner]
+                            m.append(Owner(d))
+                        }
                     }
                 }
                 data[key] = value
             } else{
-                if(value is NSNull){
-                    print("Issues data [" + key + "] is Null")
-                } else{
-                    print("Issues data [" + key + "] is not mapping")
-                }
+                print("Issues data [" + key + "] is not mapping")
             }
         }
+    }
+    
+    func get(_ key : String) -> Any?{
+        if data.keys.contains(key) && !(data[key] is NSNull){
+            return data[key]
+        }
+        
+        return nil
     }
 }

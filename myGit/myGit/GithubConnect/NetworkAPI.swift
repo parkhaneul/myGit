@@ -10,7 +10,7 @@ import Foundation
 
 public typealias completionType = (Data?,URLResponse?,Error?) -> Swift.Void
 
-class NetworkAPI{
+struct NetworkAPI{
     var session : URLSession
     
     public init(){
@@ -22,7 +22,7 @@ class NetworkAPI{
     }
     
     public func get(url : String, parameters : [String : String]? = nil, headers : [String : String]? = nil, completion : @escaping completionType){
-        let request = Request(url: url, method: .GET).parameters(parameters: parameters).headers(headers: headers)
+        let request = Request(url: url, method: .GET, parameters: parameters, headers: headers)
         let buildRequest = request.request()
         guard let urlRequest = buildRequest.request else {
             completion(nil,nil,buildRequest.error)

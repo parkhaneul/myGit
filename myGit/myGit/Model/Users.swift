@@ -53,4 +53,12 @@ struct Users : CustomInfoType{
             }
         }
     }
+    
+    func get(_ key : String) -> Any?{
+        if data.keys.contains(key) && !(data[key] is NSNull){
+            return data[key]
+        }
+        
+        return nil
+    }
 }

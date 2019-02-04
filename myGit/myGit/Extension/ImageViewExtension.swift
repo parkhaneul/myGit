@@ -9,7 +9,7 @@
 import UIKit
 
 extension UIImageView{
-    func downloaded(from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {
+    private func downloaded(name : String, from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {
         contentMode = mode
         URLSession.shared.dataTask(with: url, completionHandler: {(data,response,error) in
             guard
@@ -19,20 +19,34 @@ extension UIImageView{
                 let image = UIImage(data: data)
                 else {return}
             DispatchQueue.main.async() {
-                self.image = image
+                self.image = imageCache.registerImage(name: name, image: image)
             }
         }).resume()
     }
     
-    func downloaded(from link: String, contentMode mode: UIView.ContentMode = .scaleAspectFit) {
-        guard let url = URL(string: link) else { return }
-        downloaded(from: url, contentMode: mode)
+    func downloaded(from link: String, contentMode mode: UIView.ContentMode = .scaleAspectFit) -> UIImageView{
+        if(imageCache.isList(link)){
+            self.image = imageCache.getImage(link)
+        }
+        guard let url = URL(string: link) else { return self}
+        downloaded(name : link, from: url, contentMode: mode)
+        
+        return self
     }
     
-    func circularImage(){
+    func circularImage() -> UIImageView{
         self.layer.masksToBounds = false
         self.layer.cornerRadius = self.layer.bounds.height/2
         self.clipsToBounds = true
+        
+        return self
+    }
+    
+    func setBorder(width : Int, color : CGColor) -> UIImageView{
+        self.layer.borderColor = color
+        self.layer.borderWidth = CGFloat(width)
+        
+        return self
     }
 }
 

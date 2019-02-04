@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Github{
+struct Github{
     var authentication : Authentication?
     var network : NetworkAPI?
     
@@ -18,7 +18,7 @@ class Github{
         "Content-Type" : "application/json; charset=utf-8"
     ]
     
-    public init(authentication : Authentication? = nil){
+    public init(authentication : Authentication? = shared_authentication){
         self.authentication = authentication
         network = NetworkAPI()
     }
