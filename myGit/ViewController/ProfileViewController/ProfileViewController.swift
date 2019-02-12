@@ -33,7 +33,7 @@ class ProfileViewController : UITableViewController{
                     self.updateUserInfo()
                 }
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }

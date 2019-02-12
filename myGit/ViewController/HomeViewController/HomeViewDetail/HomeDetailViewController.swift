@@ -67,7 +67,7 @@ class HomeDetailViewController : UIViewController{
                     self.drawContent(self.rmData.get("content") as! String)
                 }
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }

@@ -36,7 +36,7 @@ class FileDetailViewController : UIViewController{
                     self.draw()
                 }
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }

@@ -64,7 +64,7 @@ class HomeViewController : UITableViewController{
                 }
                 completion()
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }
@@ -93,7 +93,7 @@ class HomeViewController : UITableViewController{
                     self.tableView.reloadData()
                 }
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }
@@ -105,7 +105,6 @@ class HomeViewController : UITableViewController{
                     let org = Organization(json)
                     self.orgs.append(org)
                 }
-                
                 for org in self.orgs{
                     self.loadForkRepos(organization: org.get("login") as! String)
                 }
@@ -116,6 +115,8 @@ class HomeViewController : UITableViewController{
                     self.stopSpinner()
                     self.tableView.reloadData()
                 }
+            } else{
+                ConnectFailViewController.showErrorView(self)
             }
         }
     }
@@ -129,7 +130,7 @@ class HomeViewController : UITableViewController{
                     self.data.append(repo)
                 }
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }

@@ -64,7 +64,6 @@ class RepoContentViewController : UITableViewController{
             self.stopSpinner()
             if let response = response{
                 if self.isEmpty {
-                    
                 }else{
                     for content in response.toJsonArray(){
                         self.data.append(Contents(content))
@@ -77,7 +76,7 @@ class RepoContentViewController : UITableViewController{
                     }
                 }
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }

@@ -76,7 +76,7 @@ class IssueViewController : UITableViewController {
                     self.tableView.reloadData()
                 }
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }

@@ -75,7 +75,7 @@ struct Github{
             }
             do{
                 completion(data,error)
-            }catch{
+            } catch{
                 completion(nil,error)
             }
         })
@@ -90,7 +90,7 @@ struct Github{
             }
             do{
                 completion(data,error)
-            }catch{
+            } catch{
                 completion(nil,error)
             }
         })

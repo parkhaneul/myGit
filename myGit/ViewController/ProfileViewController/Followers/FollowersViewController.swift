@@ -50,6 +50,8 @@ class FollowersViewController : UITableViewController{
                 for user in self.data{
                     self.loadUser(login: user.get("login") as! String)
                 }
+            } else{
+                ConnectFailViewController.showErrorView(self)
             }
         }
     }

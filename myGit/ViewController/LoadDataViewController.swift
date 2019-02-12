@@ -9,8 +9,6 @@
 import UIKit
 
 class LoadDataViewController : UIViewController{
-    //var repoData : [Repository] = []
-    
     override func viewDidLoad() {
         super.viewDidLoad()
     }

@@ -95,7 +95,7 @@ class DetailIssueViewController : UITableViewController{
                     self.tableView.reloadData()
                 }
             } else{
-                print(error ?? "")
+                ConnectFailViewController.showErrorView(self)
             }
         })
     }
