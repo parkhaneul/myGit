@@ -9,8 +9,8 @@
 import UIKit
 
 class FollowersViewController : UITableViewController{
-    var data : [Owner] = []
-    var userData : [Users] = []
+    var data : [Owner]? = []
+    var userData : [Owner] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,7 +27,6 @@ class FollowersViewController : UITableViewController{
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "FollowerCell", for: indexPath) as? FollowersViewCell
-        
         if indexPath.row < userData.count {
             cell?.setData(userData[indexPath.row])
         }
@@ -36,36 +35,30 @@ class FollowersViewController : UITableViewController{
     
     func loadFollowers(){
         showSpinner(onView: self.view)
-        GithubAPI().getFollowers { (response, error) in
-            if let response = response{
-                for json in response.toJsonArray(){
-                    let user = Owner(json)
-                    self.data.append(user)
+        GithubAPI().getFollowers {(followers) in
+            if let followers = followers{
+                self.data = followers
+                for follower in followers{
+                    self.loadUser(login: follower.login!)
                 }
-                
-                if self.data.isEmpty{
-                    self.stopSpinner()
-                }
-                
-                for user in self.data{
-                    self.loadUser(login: user.get("login") as! String)
-                }
-            } else{
-                ConnectFailViewController.showErrorView(self)
             }
+            self.stopSpinner()
         }
     }
     
     func loadUser(login : String){
-        GithubAPI().getUserByLoginString(login) { (response, error) in
+        GithubAPI().getUserByLoginString(login){(user) in
+            if let user = user{
+                self.userData.append(user)
+                self.reloadData()
+            }
             self.stopSpinner()
-            if let response = response{
-                self.userData.append(Users(response.toJson()))
-            }
-            
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-            }
+        }
+    }
+    
+    func reloadData(){
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
         }
     }
 }

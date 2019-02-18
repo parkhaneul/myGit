@@ -72,30 +72,3 @@ struct Organization : CustomInfoType{
         return nil
     }
 }
-
-struct Plan : CustomInfoType{
-    var data : JSON = [
-        "name": "",
-        "space": 0,
-        "private_repos": 0
-    ]
-    
-    init(_ json : JSON){
-        let json = json
-        for (key,value) in json{
-            if data.keys.contains(key) && !(value is NSNull){
-                data[key] = value
-            } else{
-                print("Plan data [" + key + "] is not mapping")
-            }
-        }
-    }
-    
-    func get(_ key : String) -> Any?{
-        if data.keys.contains(key) && !(data[key] is NSNull){
-            return data[key]
-        }
-        
-        return nil
-    }
-}

@@ -14,7 +14,20 @@ class FileDetailViewController : UIViewController{
     @IBOutlet weak var scroll: UIScrollView!
     
     var path : String = ""
-    var data : Contents = Contents([:])
+    
+    private var _data : Contents?
+    var data : Contents?{
+        get{
+            return _data
+        }
+        set(newVal){
+            _data = newVal
+            guard newVal != nil else{
+                return
+            }
+            draw()
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,29 +35,25 @@ class FileDetailViewController : UIViewController{
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        data = Contents([:])
         super.viewDidDisappear(animated)
     }
     
     func loadContents(){
         showSpinner(onView: self.view)
-        GithubAPI().getFileByPath(path: path, completion: {(response, error) in
-            self.stopSpinner()
-            if let response = response{
-                self.data = Contents(response.toJson())
-                DispatchQueue.main.async {
-                    self.draw()
-                }
-            } else{
-                ConnectFailViewController.showErrorView(self)
+        GithubAPI().getFileByPath(path: path, completion: {(file) in
+            if let file = file{
+                self.data = file
             }
+            self.stopSpinner()
         })
     }
     
     func draw(){
-        fileName.text = data.get("name") as? String
-        let read = data.get("content") as! String
-        content.text = read.decodeBase64()
-        scroll.contentSize = content.intrinsicContentSize
+        DispatchQueue.main.async {
+            self.fileName.text = self.data!.name
+            let read = self.data!.content!
+            self.content.text = read.decodeBase64()
+            self.scroll.contentSize = self.content.intrinsicContentSize
+        }
     }
 }

@@ -16,11 +16,12 @@ class DetailIssueViewController : UITableViewController{
     @IBOutlet weak var infoText: UILabel!
     @IBOutlet weak var stateText: UILabel!
     
-    var data : [Comment] = []
-    var issue : Issues = Issues([:])
+    var data : [Comment]?
+    var issue : Issues?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        showSpinner(onView: self.view)
         // Do any additional setup after loading the view, typically from a nib.
     }
     
@@ -30,22 +31,20 @@ class DetailIssueViewController : UITableViewController{
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        data.removeAll()
+        data = nil
         super.viewDidAppear(animated)
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data.count
+        return data?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "detailIssue", for: indexPath) as? DetailIssueViewCell
-        if indexPath.row < data.count + 1 {
-            let user = data[indexPath.row].get("user") as! JSON
-            cell?.usernameText.text = user["login"] as! String
-            cell?.commentDate.text = "comments at " + (data[indexPath.row].get("created_at") as! String).splitToOffset(offsetBy: 10)
-            cell?.commentText.text = data[indexPath.row].get("body") as! String
-            cell?.draw()
+        if data != nil{
+            if indexPath.row < data!.count {
+                cell?.setData(comments: data![indexPath.row])
+            }
         }
         return cell!
     }
@@ -65,38 +64,36 @@ class DetailIssueViewController : UITableViewController{
     }
     
     func drawInfo(){
-        let userName : String = Owner(issue.get("user") as! JSON).get("login") as! String
-        let state : String = issue.get("state") as! String
-        let created_at : String = (issue.get("created_at") as! String).splitToOffset(offsetBy: 10)
-        let repo = issue.get("repository") as! JSON
-        let repoName : String = repo["name"] as! String
-        let number : Int = issue.get("number") as! Int
+        let user = issue!.user!
+        let userName = user.login!
+        let state = issue!.state!
+        let created_at = issue!.created_at!.splitToOffset(offsetBy: 10)
+        let repo = issue!.repository!
+        let repoName = repo.name!
+        let number = issue!.number!
         
         repoText.text = repoName
         numberText.text = "# " + String(number)
         stateText.text = state
-        commentText.text = String(issue.get("comments") as! Int) + " comments"
+        commentText.text = String(issue!.comments!) + " comments"
         infoText.text = userName + " " + state + "ed this issue at " + created_at
         
         loadComments(userName: userName, repoName : repoName, number: number)
     }
     
     func loadComments(userName : String, repoName : String, number : Int){
-        showSpinner(onView: self.view)
-        GithubAPI().getIssueCommentsByRepoAndNumber(info: (userName,repoName,number), completion: {(response, error) in
-            self.stopSpinner()
-            if let response = response{
-                self.data.append(Comment(self.issue.data))
-                for json in response.toJsonArray(){
-                    let comment = Comment(json)
-                    self.data.append(comment)
-                }
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            } else{
-                ConnectFailViewController.showErrorView(self)
+        GithubAPI().getIssueCommentsByRepoAndNumber(info: (userName,repoName,number)){(comments) in
+            if let comments = comments{
+                self.data = comments
+                self.reloadData()
             }
-        })
+            self.stopSpinner()
+        }
+    }
+    
+    func reloadData(){
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
 }

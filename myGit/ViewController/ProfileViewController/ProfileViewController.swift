@@ -15,7 +15,7 @@ class ProfileViewController : UITableViewController{
     @IBOutlet weak var followings: UILabel!
     @IBOutlet weak var profileImage: UIImageView!
     
-    var user : Users = Users([:])
+    var user : Owner? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,26 +24,29 @@ class ProfileViewController : UITableViewController{
     
     func loadData(){
         showSpinner(onView: self.view)
-        GithubAPI().getUserByToken(completion: {(response, error) in
-            self.stopSpinner()
-            if let response = response{
-                self.user = Users(response.toJson())
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                    self.updateUserInfo()
-                }
-            } else{
-                ConnectFailViewController.showErrorView(self)
+        GithubAPI().getUserByToken{(user) in
+            if let user  = user{
+                self.user = user
+                self.reloadData()
             }
-        })
+            self.stopSpinner()
+        }
     }
     
     func updateUserInfo(){
-        self.profileImage.downloaded(from: user.data["avatar_url"] as! String)
-        self.profileImage.circularImage().setBorder(width: 2, color: UIColor.white.cgColor)
-        self.name.text = user.data["name"] as? String
-        self.fullName.text = user.data["company"] as? String
-        self.followers.text = "followers" + String(user.data["followers"] as! Int)
-        self.followings.text = "following" + String(user.data["following"] as! Int)
+        self.profileImage.downloaded(from: user!.avatar_url!)
+        self.profileImage.circularImage()
+        self.profileImage.setBorder(width: 2, color: UIColor.white.cgColor)
+        self.name.text = user!.name!
+        self.fullName.text = user!.company ?? ""
+        self.followers.text = "followers" + String(user!.followers!)
+        self.followings.text = "following" + String(user!.following!)
+    }
+    
+    func reloadData(){
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+            self.updateUserInfo()
+        }
     }
 }

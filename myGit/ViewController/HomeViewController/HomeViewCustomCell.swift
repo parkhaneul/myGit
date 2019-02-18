@@ -15,29 +15,57 @@ class HomeViewCustomCell : UITableViewCell{
     @IBOutlet weak var dateText: UILabel!
     @IBOutlet weak var state: UILabel!
     
-    var data : Repository = Repository([:])
+    enum ownerShip : String{
+        case owner = "Owner"
+        case starred = "Starred"
+        case forks = "Forks"
+    }
+    
+    private var _data : Repository?
+    var data : Repository?{
+        get{
+            return _data
+        }
+        set(newVal){
+            _data = newVal
+            guard let data = newVal else{
+                return
+            }
+            let user = data.owner!
+            let date = data.updated_at!
+            profileImage.downloaded(from: user.avatar_url!)
+            profileImage.circularImage()
+            nameTextChange(text: data.full_name!)
+            mainTextChnage(text: data.decription ?? "")
+            dateTextChange(text: date)
+        }
+    }
     
     func setData(_ repo : Repository){
-        data = repo
-        let user = Owner(data.get("owner") as! JSON)
-        profileImage.downloaded(from: user.get("avatar_url") as! String)
-        profileImage.circularImage()
-        setState()
-        nameText.text = data.get("full_name") as? String
-        mainText.text = data.get("description") as? String
-        let date = repo.get("updated_at") as! String
-        dateText.text = date.dateCalcul()
+        self.data = repo
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
     
-    func setState(){
-        var st = data.get("state") as! String
-        if st == "Owner"{
+    func dateTextChange(text : String){
+        dateText.text = text.dateCalcul()
+    }
+    
+    func mainTextChnage(text : String){
+        mainText.text = text
+    }
+    
+    func nameTextChange(text : String){
+        nameText.text = text
+    }
+    
+    func setState(owner : ownerShip){
+        var st = owner.rawValue
+        if owner == ownerShip.owner{
             state.textColor = UIColor.gray
-        } else if st == "Starred"{
+        } else if owner == ownerShip.starred{
             st = st + " ★"
             state.textColor = UIColor.blue
         } else {
@@ -46,6 +74,7 @@ class HomeViewCustomCell : UITableViewCell{
         }
         state.text = st
     }
+
 }
 
 

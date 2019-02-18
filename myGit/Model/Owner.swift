@@ -8,52 +8,18 @@
 
 import Foundation
 
-typealias JSON = Dictionary<String,Any>
-
-protocol CustomInfoType {
-    init(_ json : JSON)
-    func get(_ key : String) -> Any?
-}
-
-struct Owner : CustomInfoType{
-    var data : JSON = [
-        "login" : "",
-        "id" : 0,
-        "node_id" : "",
-        "avatar_url" : "",
-        "gravatar_url" : "",
-        "gravatar_id" : "",
-        "url" : "",
-        "html_url" : "",
-        "followers_url" : "",
-        "following_url" : "",
-        "gists_url" : "",
-        "starred_url" : "",
-        "subscriptions_url" : "",
-        "organizations_url" : "",
-        "repos_url" : "",
-        "events_url" : "",
-        "received_events_url" : "",
-        "type" : "",
-        "site_admin" : false
-    ]
-    
-    init(_ json : JSON){
-        let json = json
-        for (key,value) in json{
-            if data.keys.contains(key){
-                data[key] = value
-            } else{
-                print("Owner data [" + key + "] is not mapping")
-            }
-        }
-    }
-    
-    func get(_ key : String) -> Any?{
-        if data.keys.contains(key) && !(data[key] is NSNull){
-            return data[key]
-        }
-        
-        return nil
-    }
+struct Owner : Codable{
+    let login : String?
+    let id : Int?
+    let node_id : String?
+    let avatar_url : String?
+    let followers_url : String?
+    let following_url : String?
+    let starred_url : String?
+    let organizations_url : String?
+    let repos_url : String?
+    let followers : Int?
+    let following : Int?
+    let name : String?
+    let company : String?
 }

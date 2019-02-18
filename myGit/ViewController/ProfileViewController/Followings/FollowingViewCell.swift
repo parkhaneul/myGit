@@ -13,13 +13,24 @@ class FollowingViewCell : UITableViewCell{
     @IBOutlet weak var mainLabel: UILabel!
     @IBOutlet weak var subLabel: UILabel!
     
-    var data = Users([:])
+    private var _data : Owner?
+    var data : Owner?{
+        get{
+            return _data
+        }
+        set(newVal){
+            _data = newVal
+            guard let data = newVal else {
+                return
+            }
+            profileImage.downloaded(from: data.avatar_url!)
+            profileImage.circularImage()
+            mainLabel.text = data.login!
+            subLabel.text = data.name!
+        }
+    }
     
-    func setData(_ user : Users){
+    func setData(_ user : Owner){
         data = user
-        profileImage.downloaded(from: data.get("avatar_url") as! String)
-        profileImage.circularImage()
-        mainLabel.text = data.get("login") as! String
-        subLabel.text = data.get("name") as! String
     }
 }

@@ -18,6 +18,6 @@ class DirectoryCell : UITableViewCell{
     }
     
     func setData(_ data : Contents){
-        contentsName.text = data.get("name") as! String
+        contentsName.text = data.name
     }
 }

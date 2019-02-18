@@ -10,6 +10,7 @@ import UIKit
 
 var vSpinner : UIView?
 
+//spinner
 extension UIViewController{
     func showSpinner(onView : UIView){
         if vSpinner == nil{
