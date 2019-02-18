@@ -25,6 +25,7 @@ public struct BasicAuthentication : Authentication{
     
     var key: String{
         return "Authorization"
+        //return username
     }
     var value: String{
         return "Basic \(authrization.toBase64() ?? "")"

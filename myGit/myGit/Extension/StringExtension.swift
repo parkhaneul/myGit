@@ -64,8 +64,6 @@ extension String{
         var date = dateFormatter.date(from: str.splitToOffset(offsetBy: 10))
         let now = Date()
         
-        let today = Calendar.current
-        
         if date!.compareNow(.year) < 1 {
             if date!.compareNow(.month) < 1{
                 if date!.compareNow(.day) < 1 {
@@ -73,13 +71,13 @@ extension String{
                     let hourStr = str.splitToEndOffset(offsetBy: 9).splitToOffset(offsetBy: 8)
                     date = dateFormatter.date(from: hourStr)
                     if date!.compareNow(.hour) < 1{
-                        return "\(today.component(.minute, from: now)) minutes ago"
+                        return "\(-date!.compare(now).rawValue) minutes ago"
                     }
-                    return "\(today.component(.hour, from: now)) hours ago"
+                    return "\(-date!.compare(now).rawValue) hours ago"
                 }
-                return "\(today.component(.day, from: now)) days ago"
+                return "\(-date!.compare(now).rawValue) days ago"
             }
-            return "\(today.component(.month, from: now)) months ago"
+            return "\(-date!.compare(now).rawValue) months ago"
         }
         return self.splitToOffset(offsetBy: 10)
     }

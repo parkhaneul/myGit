@@ -15,15 +15,33 @@ class DetailIssueViewCell : UITableViewCell{
     @IBOutlet weak var commentDate: UILabel!
     @IBOutlet weak var scroll: UIScrollView!
     
+    private var _data : Comment?
+    var data : Comment?{
+        get{
+            return _data
+        }
+        set(newVal){
+            _data = newVal
+            guard let data = newVal else{
+                return
+            }
+            
+            let user = data.user!
+            usernameText.text = user.login!
+            commentDate.text = "comments at " + (data.created_at!).splitToOffset(offsetBy: 10)
+            commentText.text = data.body!
+            commentText.preferredMaxLayoutWidth = scroll.bounds.width
+            scroll.contentSize = commentText.intrinsicContentSize
+        }
+    }
     var yOffset : CGFloat = 0
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
     
-    func draw(){
-        commentText.preferredMaxLayoutWidth = scroll.bounds.width
-        scroll.contentSize = commentText.intrinsicContentSize
+    func setData(comments : Comment){
+        self.data = comments
     }
     
     func autoScroll(){

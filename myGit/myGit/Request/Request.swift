@@ -32,7 +32,15 @@ struct Request{
                 }
             }
             request.httpMethod = method.rawValue
-            request.httpBody = body
+            if method == .GET{
+                request.httpBody = body
+            } else{
+                do{
+                    request.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+                }catch{
+                    request.httpBody = body
+                }
+            }
             return (request, nil)
         }
         return(nil, "Unable to create URL" as? Error)

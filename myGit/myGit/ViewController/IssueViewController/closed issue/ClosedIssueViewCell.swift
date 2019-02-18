@@ -12,7 +12,29 @@ class ClosedIssueViewCustomCell : UITableViewCell{
     @IBOutlet weak var dataText: UILabel!
     @IBOutlet weak var infoText: UILabel!
     
-    var data : Issues = Issues([:])
+    private var _data : Issues?
+    var data : Issues?{
+        get{
+            return _data
+        }
+        set(newVal){
+            _data = newVal
+            guard let data = newVal else{
+                return
+            }
+            dataText.text = data.title!
+            let repo = data.repository!
+            let user = data.user!
+            let number = data.number!
+            let closed_date = data.closed_at!
+            
+            let repoName = repo.name!
+            let userName = user.login!
+            
+            let infoText = repoName + " #" + String(number) + " closed at " + closed_date.dateCalcul() + " by " + userName
+            self.infoText.text = infoText
+        }
+    }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -20,16 +42,5 @@ class ClosedIssueViewCustomCell : UITableViewCell{
     
     func setData(_ issue : Issues){
         data = issue
-        dataText.text = data.get("title") as! String
-        let repo = data.get("repository") as! JSON
-        let repoName = repo["name"] as! String
-        let number = data.get("number") as! Int
-        let created_date = data.get("closed_at") as! String
-        let dateString = created_date.splitToOffset(offsetBy: 10)
-        let user = data.get("user") as! JSON
-        let userName = user["login"] as! String
-        
-        let infoText = repoName + " #" + String(number) + " closed at " + dateString + " by " + userName
-        self.infoText.text = infoText
     }
 }

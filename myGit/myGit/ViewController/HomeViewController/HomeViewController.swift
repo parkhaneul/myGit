@@ -8,97 +8,78 @@
 
 import UIKit
 
+struct HomeViewControllerModel{
+    var data : [Repository]?{
+        get{
+            var data = (ownerData ?? []) + (starredData ?? [])
+            data = Array(Set(data))
+            data.sort(by: {$0.updated_at! > $1.updated_at!})
+            return data
+        }
+    }
+    var ownerData : [Repository]?
+    var starredData : [Repository]?
+}
+
 class HomeViewController : UITableViewController{
-    var data : [Repository] = []
-    
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        // Do any additional setup after loading the view, typically from a nib.
-    }
+    var viewModel = HomeViewControllerModel()
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        showSpinner(onView: self.view)
         loadUserRepos{
             self.loadStarRepos()
         }
-        super.viewWillAppear(animated)
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        data.removeAll()
-        super.viewDidDisappear(animated)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let detail = segue.destination as? HomeDetailViewController{
             let cell = sender as! HomeViewCustomCell
-            detail.setData(cell.data)
+            detail.setData(cell.viewModel.data!)
         }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data.count
+        return viewModel.data?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "RepoCell", for: indexPath) as? HomeViewCustomCell
-        
-        if indexPath.row < data.count {
-            cell?.setData(data[indexPath.row])
+        if viewModel.data != nil{
+            if indexPath.row < viewModel.data!.count {
+                if viewModel.ownerData?.contains(viewModel.data![indexPath.row]) ?? false{
+                    cell?.viewModel.owner = .owner
+                } else{
+                    cell?.viewModel.owner = .starred
+                }
+                cell?.setData(viewModel.data![indexPath.row])
+            }
         }
         return cell!
     }
     
     func loadUserRepos(_ completion : @escaping () -> ()){
-        GithubAPI().getUserReposByToken(completion: {(response, error) in
-            if let response = response{
-                for repos in response.toJsonArray(){
-                    self.data.append(Repository(repos))
-                }
-                completion()
-            } else{
-                print(error ?? "")
+        GithubAPI().getUserReposByToken { (repoList) in
+            if let repoList = repoList{
+                self.viewModel.ownerData = repoList
             }
-        })
+            completion()
+        }
     }
     
     func loadStarRepos(){
-        GithubAPI().getUserStarred(completion: {(response, error) in
-            if let response = response{
-                for json in response.toJsonArray(){
-                    var repo = Repository(json)
-                    repo.data["state"] = "Starred"
-                    self.data.append(repo)
-                }
-                self.data.sort(by : {
-                    $0.data["updated_at"] as! String > $1.data["updated_at"] as! String
-                })
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            } else{
-                print(error ?? "")
+        GithubAPI().getUserStarred { (repoList) in
+            if let repoList = repoList{
+                self.viewModel.starredData = repoList
             }
-        })
+            self.stopSpinner()
+            self.reloadData()
+        }
     }
     
-    /*
-    func loadForkRepos(){
-        GithubAPI().getOrgForkByToken(org : ,completion: {(response, error) in
-            if let response = response{
-                for repos in response.toJsonArray(){
-                    self.data.append(Repository(repos))
-                }
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            } else{
-                print(error ?? "")
-            }
-        })
-    }*/
+    func reloadData(){
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
+    }
 }

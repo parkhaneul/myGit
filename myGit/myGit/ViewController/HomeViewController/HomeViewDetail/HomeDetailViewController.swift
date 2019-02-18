@@ -8,6 +8,11 @@
 
 import UIKit
 
+struct HomeDetailViewControllerModel{
+    var data : Repository?
+    var rmData : Contents?
+}
+
 class HomeDetailViewController : UIViewController{
     @IBOutlet weak var userName: UILabel!
     @IBOutlet weak var gitName: UILabel!
@@ -20,60 +25,55 @@ class HomeDetailViewController : UIViewController{
     @IBOutlet weak var star: UILabel!
     @IBOutlet weak var fork: UILabel!
     
-    var data : Repository = Repository([:])
-    var rmData : Contents = Contents([:])
+    var viewModel = HomeDetailViewControllerModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        draw()
-        readMeDownload()
         setGesture(.left)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        readMeDownload()
+    }
+    
     override func viewDidDisappear(_ animated: Bool) {
-        data = Repository([:])
-        rmData = Contents([:])
         super.viewDidDisappear(animated)
     }
     
-    func draw(){
-        let user = data.get("owner") as! JSON
-        let created = data.get("created_at") as! String
-        let updated = data.get("updated_at") as! String
-        let lang = data.get("language") as? String
-        
-        watch.text = String(data.get("watchers") as! Int)
-        star.text = String(data.get("stargazers_count") as! Int)
-        fork.text = String(data.get("forks") as! Int)
-        
-        userName.text = user["login"] as! String
-        gitName.text = "/" + (data.get("name") as! String)
-        
-        created_at.text = "Created at " + created.splitToOffset(offsetBy: 10)
-        lastest_commit_at.text = "Lastest update at " + updated.splitToOffset(offsetBy: 10)
-        
-        language.text = lang
-        language.textColor = ColorDictionary().getColor(language: lang)
+    func readMeDownload(){
+        showSpinner(onView: self.view)
+        let url = viewModel.data!.url! + "/readme"
+        GithubAPI().getReadMe(full_path: url){(readMeData) in
+            if let readMeData = readMeData{
+                self.viewModel.rmData = readMeData
+                DispatchQueue.main.async {
+                    self.drawContent(self.viewModel.rmData!.content!)
+                    self.draw(self.viewModel.data!)
+                }
+            }
+            self.stopSpinner()
+        }
     }
     
-    func readMeDownload(){
-        let url = data.data["url"] as! String + "/readme"
-        GithubAPI().git.get(full_path: url, completion: {(response, error) in
-            if let response = response{
-                self.rmData = Contents(response.toJson())
-                DispatchQueue.main.async {
-                    self.drawContent(self.rmData.get("content") as! String)
-                }
-            } else{
-                print(error ?? "")
-            }
-        })
+    func draw(_ data : Repository){
+        self.watch.text = String(data.watchers ?? 0)
+        self.star.text = String(data.stargazers_count ?? 0)
+        self.fork.text = String(data.forks ?? 0)
+            
+        self.userName.text = data.owner!.login
+        self.gitName.text = "/" + data.name!
+        self.created_at.text = "Created at " + data.created_at!.splitToOffset(offsetBy: 10)
+        self.lastest_commit_at.text = "Lastest update at " + data.updated_at!.splitToOffset(offsetBy: 10)
+            
+        self.language.text = data.language
+        self.language.textColor = ColorDictionary().getColor(language: data.language)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let vc = segue.destination as! RepoContentViewController
-        let user = data.get("owner") as! JSON
-        vc.path = (user["login"] as! String) + "/" + (data.get("name") as! String) + "/contents/"
+        let user = viewModel.data?.owner
+        vc.viewModel.path = user!.login! + "/" + viewModel.data!.name! + "/contents/"
     }
     
     func setGesture(_ direction : UISwipeGestureRecognizer.Direction){
@@ -89,11 +89,11 @@ class HomeDetailViewController : UIViewController{
     }
     
     func drawContent(_ str : String){
-        readMe.text = str.decodeBase64()
-        scroll.contentSize = readMe.intrinsicContentSize
+        self.readMe.text = str.decodeBase64()
+        self.scroll.contentSize = self.readMe.intrinsicContentSize
     }
     
     func setData(_ data :Repository){
-        self.data = data
+        viewModel.data = data
     }
 }

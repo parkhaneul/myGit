@@ -1446,7 +1446,7 @@ struct ColorDictionary {
     
     func getColor(language : String?) -> UIColor{
         if let language = language{
-            let languageInfo = data[language] as! JSON
+            let languageInfo = data[language] as! [String:Any]
             if let hexString = languageInfo["color"] as? String{
                 let hexint = Int(self.intFromHexString(hexStr: hexString))
                 let red = CGFloat((hexint & 0xff0000) >> 16) / 255.0
@@ -1464,11 +1464,8 @@ struct ColorDictionary {
     
     func intFromHexString(hexStr: String) -> UInt32 {
         var hexInt: UInt32 = 0
-        // Create scanner
         let scanner: Scanner = Scanner(string: hexStr)
-        // Tell scanner to skip the # character
         scanner.charactersToBeSkipped = CharacterSet(charactersIn: "#")
-        // Scan hex value
         scanner.scanHexInt32(&hexInt)
         return hexInt
     }

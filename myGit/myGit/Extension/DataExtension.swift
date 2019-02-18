@@ -13,11 +13,11 @@ extension Data{
         return try! JSONSerialization.jsonObject(with: self, options: .mutableContainers)
     }
     
-    func toJson() -> JSON{
-        return try! JSONSerialization.jsonObject(with: self, options: .mutableContainers) as! JSON
+    func toJson() -> [String:Any]{
+        return try! JSONSerialization.jsonObject(with: self, options: .mutableContainers) as! [String:Any]
     }
     
-    func toJsonArray() -> [JSON] {
+    /*func toJsonArray() -> [JSON] {
         return try! JSONSerialization.jsonObject(with: self, options: .mutableContainers) as! [JSON]
-    }
+    }*/
 }

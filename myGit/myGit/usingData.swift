@@ -8,21 +8,23 @@
 
 import Foundation
 
+enum login : String{
+    case authNote = "newTokenForMyGitAppExample"
+}
+
 enum gitURL : String{
     case base = "https://api.github.com"
     case test = "https://api.github.com/users/whatever?client_id=2ac74195efa983ff6927&client_secret=c7a393663ba9511c9e46c66bf029071a6652cb97"
     case login = "https://api.github.com/repos/user/repo"
 }
 
-struct auth{
-    let name : String = "parkhaneul"
-    let password :String = "house2060"
-    let client_id : String = "2ac74195efa983ff6927"
-    let client_secret : String = "7a393663ba9511c9e46c66bf029071a6652cb97"
-    let access_token : String = "43a8dffe474e6cb8fd357837df36b4bdd7cfa0d3"
+enum auth : String{
+    case name = "parkhaneul"
+    case password = "house2060"
+    case client_id = "2ac74195efa983ff6927"
+    case client_secret = "7a393663ba9511c9e46c66bf029071a6652cb97"
 }
 
-struct info{
-    let id : String = ""
-    let pwd : String = ""
+enum token : String{
+    case personal_Token = "dd3d6e458a3315dde3c9efc506dfd21a4ca57204"
 }

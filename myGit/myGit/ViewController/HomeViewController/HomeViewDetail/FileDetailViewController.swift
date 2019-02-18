@@ -8,41 +8,40 @@
 
 import UIKit
 
+struct FileDetailViewControllerModel{
+    var path : String = ""
+    var data : Contents?
+}
+
 class FileDetailViewController : UIViewController{
     @IBOutlet weak var fileName: UILabel!
     @IBOutlet weak var content: UILabel!
     @IBOutlet weak var scroll: UIScrollView!
     
-    var path : String = ""
-    var data : Contents = Contents([:])
+    var viewModel = FileDetailViewControllerModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         loadContents()
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        data = Contents([:])
-        super.viewDidDisappear(animated)
-    }
-    
     func loadContents(){
-        GithubAPI().getFileByPath(path: path, completion: {(response, error) in
-            if let response = response{
-                self.data = Contents(response.toJson())
-                DispatchQueue.main.async {
-                    self.draw()
-                }
-            } else{
-                print(error ?? "")
+        showSpinner(onView: self.view)
+        GithubAPI().getFileByPath(path: viewModel.path, completion: {(file) in
+            if let file = file{
+                self.viewModel.data = file
+                self.draw()
             }
+            self.stopSpinner()
         })
     }
     
     func draw(){
-        fileName.text = data.get("name") as? String
-        let read = data.get("content") as! String
-        content.text = read.decodeBase64()
-        scroll.contentSize = content.intrinsicContentSize
+        DispatchQueue.main.async {
+            self.fileName.text = self.viewModel.data!.name
+            let read = self.viewModel.data!.content!
+            self.content.text = read.decodeBase64()
+            self.scroll.contentSize = self.content.intrinsicContentSize
+        }
     }
 }

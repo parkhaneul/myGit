@@ -23,6 +23,65 @@ struct Github{
         network = NetworkAPI()
     }
     
+    public func post(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+        post(full_path: gitURL.base.rawValue + path,
+             parameters: parameters,
+             headers: headers,
+             completion: completion)
+    }
+    
+    public func put(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+        put(full_path: gitURL.base.rawValue + path,
+            parameters: parameters,
+            headers: headers,
+            completion: completion)
+    }
+    
+    public func get(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+        get(full_path: gitURL.base.rawValue + path,
+            parameters: parameters,
+            headers: headers,
+            completion: completion)
+    }
+    
+    public func put(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+        let (newHeaders, newParameters) = addAuthenticationIfNeeded(headers: headers, parameters: parameters)
+        network?.put(url: full_path, parameters: newParameters, headers: newHeaders, completion: {(data,response,error) in
+            guard let data = data else {
+                completion(nil,error)
+                return
+            }
+            do{
+                completion(data,error)
+            }
+        })
+    }
+    
+    public func post(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+        let (newHeaders, newParameters) = addAuthenticationIfNeeded(headers: headers, parameters: parameters)
+        network?.post(url: full_path, parameters: newParameters, headers: newHeaders, completion: {(data,_,error) in
+            guard let data = data else {
+                completion(nil,error)
+                return
+            }
+            do{
+                completion(data,error)
+            }
+        })
+    }
+    
+    public func getNonAuth(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+        network?.get(url: full_path, parameters: parameters, headers: headers, completion: {(data,_,error) in
+            guard let data = data else {
+                completion(nil,error)
+                return
+            }
+            do{
+                completion(data,error)
+            }
+        })
+    }
+    
     public func get(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
         let (newHeaders, newParameters) = addAuthenticationIfNeeded(headers: headers, parameters: parameters)
         network?.get(url: full_path, parameters: newParameters, headers: newHeaders, completion: {(data,_,error) in
@@ -32,23 +91,6 @@ struct Github{
             }
             do{
                 completion(data,error)
-            }catch{
-                completion(nil,error)
-            }
-        })
-    }
-    
-    public func get(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
-        let (newHeaders, newParameters) = addAuthenticationIfNeeded(headers: headers, parameters: parameters)
-        network?.get(url: gitURL.base.rawValue + path, parameters: newParameters, headers: newHeaders, completion: {(data,_,error) in
-            guard let data = data else {
-                completion(nil,error)
-                return
-            }
-            do{
-                completion(data,error)
-            } catch{
-                completion(nil,error)
             }
         })
     }
