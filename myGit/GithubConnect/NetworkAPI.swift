@@ -34,7 +34,27 @@ struct NetworkAPI{
             completion(nil,nil,buildRequest.error)
             return
         }
-        let task = NetworkAPI.shared.dataTask(with: urlRequest, completionHandler: completion)
+        let task = NetworkAPI.shared.dataTask(with:urlRequest){(data,response,error) in
+            if let error = error{
+                completion(nil,nil,error)
+            }
+            
+            guard let response = response as? HTTPURLResponse else{
+                completion(nil,nil,ConnectionError.responseIsNil)
+                return
+            }
+            
+            guard (200..<300).contains(response.statusCode) else{
+                completion(nil,nil,ConnectionError.outOfResponseStatusCode)
+                return
+            }
+            
+            guard let data = data else{
+                completion(nil,nil,ConnectionError.dataIsNil)
+                return
+            }
+            completion(data,response,error)
+        }
         task.resume()
     }
 }
