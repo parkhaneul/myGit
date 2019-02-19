@@ -7,26 +7,28 @@
 //
 
 import UIKit
+import Alamofire
 
 //download image with cashe
 extension UIImageView{
     private func downloaded(urlStr str : String,from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {
         contentMode = mode
-        URLSession.shared.dataTask(with: url, completionHandler: {(data,response,error) in
+        AF.request(url)
+        .validate(statusCode: 200..<300)
+        .response{ response in
             guard
-                let httpURLResponse = response as? HTTPURLResponse, httpURLResponse.statusCode == 200,
-                let mimeType = response?.mimeType, mimeType.hasPrefix("image"),
-                let data = data, error == nil,
-                let image = UIImage(data: data)
-                else {return}
-            DispatchQueue.main.async() {
-                self.image = imageCashe.registerImage(url: str, image: image)
+                let data = response.data,
+                let image = UIImage(data : data) else{
+                return
             }
-        }).resume()
+            DispatchQueue.main.async {
+                self.image = imageCache.registerImage(url: str, image: image)
+            }
+        }
     }
     
     func downloaded(from link: String, contentMode mode: UIView.ContentMode = .scaleAspectFit){
-        if let img = imageCashe.getImage(link){
+        if let img = imageCache.getImage(link){
             self.image = img
         } else{
             guard let url = URL(string: link) else { return }

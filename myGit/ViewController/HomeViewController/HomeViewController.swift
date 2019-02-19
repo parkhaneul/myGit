@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HomeViewController : UITableViewController{
+struct HomeViewControllerModel{
     var data : [Repository]?{
         get{
             var data = (ownerData ?? []) + (starredData ?? [])
@@ -19,49 +19,40 @@ class HomeViewController : UITableViewController{
     }
     var ownerData : [Repository]?
     var starredData : [Repository]?
-    
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
+}
+
+class HomeViewController : UITableViewController{
+    var viewModel = HomeViewControllerModel()
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         showSpinner(onView: self.view)
         loadUserRepos{
             self.loadStarRepos()
         }
-        super.viewWillAppear(animated)
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        tableView.reloadData()
-        super.viewDidDisappear(animated)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let detail = segue.destination as? HomeDetailViewController{
             let cell = sender as! HomeViewCustomCell
-            detail.setData(cell.data!)
+            detail.setData(cell.viewModel.data!)
         }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data?.count ?? 0
+        return viewModel.data?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "RepoCell", for: indexPath) as? HomeViewCustomCell
-        if data != nil{
-            if indexPath.row < data!.count {
-                if ownerData?.contains(data![indexPath.row]) ?? false{
-                    cell?.setState(owner: .owner)
+        if viewModel.data != nil{
+            if indexPath.row < viewModel.data!.count {
+                if viewModel.ownerData?.contains(viewModel.data![indexPath.row]) ?? false{
+                    cell?.viewModel.owner = .owner
                 } else{
-                    cell?.setState(owner: .starred)
+                    cell?.viewModel.owner = .starred
                 }
-                cell?.setData(data![indexPath.row])
+                cell?.setData(viewModel.data![indexPath.row])
             }
         }
         return cell!
@@ -70,7 +61,7 @@ class HomeViewController : UITableViewController{
     func loadUserRepos(_ completion : @escaping () -> ()){
         GithubAPI().getUserReposByToken { (repoList) in
             if let repoList = repoList{
-                self.ownerData = repoList
+                self.viewModel.ownerData = repoList
             }
             completion()
         }
@@ -79,7 +70,7 @@ class HomeViewController : UITableViewController{
     func loadStarRepos(){
         GithubAPI().getUserStarred { (repoList) in
             if let repoList = repoList{
-                self.starredData = repoList
+                self.viewModel.starredData = repoList
             }
             self.stopSpinner()
             self.reloadData()
