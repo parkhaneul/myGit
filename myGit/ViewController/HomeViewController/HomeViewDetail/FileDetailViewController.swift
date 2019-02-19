@@ -8,41 +8,29 @@
 
 import UIKit
 
+struct FileDetailViewControllerModel{
+    var path : String = ""
+    var data : Contents?
+}
+
 class FileDetailViewController : UIViewController{
     @IBOutlet weak var fileName: UILabel!
     @IBOutlet weak var content: UILabel!
     @IBOutlet weak var scroll: UIScrollView!
     
-    var path : String = ""
-    
-    private var _data : Contents?
-    var data : Contents?{
-        get{
-            return _data
-        }
-        set(newVal){
-            _data = newVal
-            guard newVal != nil else{
-                return
-            }
-            draw()
-        }
-    }
+    var viewModel = FileDetailViewControllerModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         loadContents()
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-    }
-    
     func loadContents(){
         showSpinner(onView: self.view)
-        GithubAPI().getFileByPath(path: path, completion: {(file) in
+        GithubAPI().getFileByPath(path: viewModel.path, completion: {(file) in
             if let file = file{
-                self.data = file
+                self.viewModel.data = file
+                self.draw()
             }
             self.stopSpinner()
         })
@@ -50,8 +38,8 @@ class FileDetailViewController : UIViewController{
     
     func draw(){
         DispatchQueue.main.async {
-            self.fileName.text = self.data!.name
-            let read = self.data!.content!
+            self.fileName.text = self.viewModel.data!.name
+            let read = self.viewModel.data!.content!
             self.content.text = read.decodeBase64()
             self.scroll.contentSize = self.content.intrinsicContentSize
         }

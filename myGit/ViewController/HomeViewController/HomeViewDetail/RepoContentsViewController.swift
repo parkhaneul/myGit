@@ -8,13 +8,13 @@
 
 import UIKit
 
-class RepoContentViewController : UITableViewController{
-    var data : [Contents]? = nil
+struct RepoContentViewControllerModel{
+    var data : [Contents]?
     var path : String = ""
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
+}
+
+class RepoContentViewController : UITableViewController{
+    var viewModel = RepoContentViewControllerModel()
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -22,56 +22,50 @@ class RepoContentViewController : UITableViewController{
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        data?.removeAll()
         super.viewDidDisappear(animated)
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data?.count ?? 0
+        return viewModel.data?.count ?? 0
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let dir = segue.destination as? RepoContentViewController{
             let send = sender as! DirectoryCell
-            dir.path = send.path + send.contentsName.text! + "/"
+            dir.viewModel.path = send.path + send.contentsName.text! + "/"
         }
         
         if let dir = segue.destination as? FileDetailViewController{
             let send = sender as! FileCell
-            dir.path = send.path + send.contentsName.text! + "/"
+            dir.viewModel.path = send.path + send.contentsName.text! + "/"
         }
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if data != nil{
-            if(indexPath.row < data!.count + 1){
-                let content = data![indexPath.row]
+        if(indexPath.row < viewModel.data!.count + 1){
+                let content = viewModel.data![indexPath.row]
                 if(content.type == "file"){
                     let cell = tableView.dequeueReusableCell(withIdentifier: "file", for: indexPath) as! FileCell
                     cell.setData(content)
-                    cell.setPath(self.path)
+                    cell.setPath(viewModel.path)
                     return cell
                 } else{
                     let cell = tableView.dequeueReusableCell(withIdentifier: "directory", for: indexPath) as! DirectoryCell
                     cell.setData(content)
-                    cell.setPath(self.path)
+                    cell.setPath(viewModel.path)
                     return cell
                 }
             }else{
                 let cell = tableView.dequeueReusableCell(withIdentifier: "file", for: indexPath) as! FileCell
                 return cell
             }
-        }else{
-            let cell = tableView.dequeueReusableCell(withIdentifier: "file", for: indexPath) as! FileCell
-            return cell
         }
-    }
     
     func readContents(){
         showSpinner(onView: self.view)
-        GithubAPI().getContentsByPath(path: path, completion: {(content) in
+        GithubAPI().getContentsByPath(path: viewModel.path, completion: {(content) in
             if let content = content{
-                self.data = content
+                self.viewModel.data = content
                 self.reloadData()
             }
             self.stopSpinner()

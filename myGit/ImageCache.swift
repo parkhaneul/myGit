@@ -8,40 +8,39 @@
 
 import UIKit
 
-struct ImageCahce{
+var imageCache = ImageCache()
+struct ImageCache{
     private var imageList : [(String,UIImage)] = []
-    private var capacity = 30
+    private let maxCapacity = 30
     
-    func isList(_ name : String) -> Bool{
+    func isList(_ url : String) -> Bool{
+        let url = url
         for image in imageList{
-            if(image.0 == name){ return true }
+            if(image.0 == url){ return true }
         }
         return false
     }
     
-    func getImage(_ name : String) -> UIImage?{
-        let name = name
+    func getImage(_ url : String) -> UIImage?{
+        let url = url
         for image in imageList{
-            if(image.0 == name){ return image.1 }
+            if(image.0 == url){ return image.1 }
         }
         return nil
     }
     
-    mutating func registerImage(name : String, image : UIImage) -> UIImage{
-        let name = name
-        let image = image
-        if(isList(name)){
-            return getImage(name)!
+    mutating func registerImage(url : String, image : UIImage) -> UIImage{
+        let url = url
+        if let image = getImage(url){
+            return image
         } else{
-            let set = (name,image)
-            if(imageList.count < capacity){
+            let casheTuple = (url,image)
+            if(imageList.count <= maxCapacity){
             }else{
                 imageList.removeFirst()
             }
-            imageList.append(set)
-            return set.1
+            imageList.append(casheTuple)
+            return casheTuple.1
         }
     }
 }
-
-var imageCache = ImageCahce()
