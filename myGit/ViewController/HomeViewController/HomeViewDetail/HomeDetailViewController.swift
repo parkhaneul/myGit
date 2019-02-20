@@ -7,10 +7,11 @@
 //
 
 import UIKit
+import RxSwift
 
 struct HomeDetailViewControllerModel{
-    var data : Repository?
-    var rmData : Contents?
+    let data : BehaviorSubject<Repository>
+    let rmData : BehaviorSubject<Contents>
 }
 
 class HomeDetailViewController : UIViewController{
@@ -25,55 +26,38 @@ class HomeDetailViewController : UIViewController{
     @IBOutlet weak var star: UILabel!
     @IBOutlet weak var fork: UILabel!
     
-    var viewModel = HomeDetailViewControllerModel()
+    var viewModel : HomeDetailViewControllerModel?
+    let disposebag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setGesture(.left)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        readMeDownload()
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-    }
-    
-    func readMeDownload(){
-        showSpinner(onView: self.view)
-        let url = viewModel.data!.url! + "/readme"
-        GithubAPI().getReadMe(full_path: url){(readMeData) in
-            if let readMeData = readMeData{
-                self.viewModel.rmData = readMeData
-                DispatchQueue.main.async {
-                    self.drawContent(self.viewModel.rmData!.content!)
-                    self.draw(self.viewModel.data!)
-                }
-            }
-            self.stopSpinner()
+    func draw(_ data : Repository?){
+        guard let data = data else{
+            return
         }
-    }
-    
-    func draw(_ data : Repository){
         self.watch.text = String(data.watchers ?? 0)
         self.star.text = String(data.stargazers_count ?? 0)
         self.fork.text = String(data.forks ?? 0)
-            
+        
         self.userName.text = data.owner!.login
         self.gitName.text = "/" + data.name!
         self.created_at.text = "Created at " + data.created_at!.splitToOffset(offsetBy: 10)
         self.lastest_commit_at.text = "Lastest update at " + data.updated_at!.splitToOffset(offsetBy: 10)
-            
+        
         self.language.text = data.language
         self.language.textColor = ColorDictionary().getColor(language: data.language)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let vc = segue.destination as! RepoContentViewController
-        let user = viewModel.data?.owner
-        vc.viewModel.path = user!.login! + "/" + viewModel.data!.name! + "/contents/"
+        guard let data = try? viewModel!.data.value() else{
+            return
+        }
+        let user = data.owner
+        vc.viewModel.path = user!.login! + "/" + data.name! + "/contents/"
     }
     
     func setGesture(_ direction : UISwipeGestureRecognizer.Direction){
@@ -88,12 +72,38 @@ class HomeDetailViewController : UIViewController{
         }
     }
     
-    func drawContent(_ str : String){
+    func drawContent(_ contents : Contents?){
+        guard let str = contents?.content else{
+            return
+        }
         self.readMe.text = str.decodeBase64()
         self.scroll.contentSize = self.readMe.intrinsicContentSize
     }
     
     func setData(_ data :Repository){
-        viewModel.data = data
+        showSpinner(onView: self.view)
+        let url = data.url! + "/readme"
+        GithubAPI.API.getReadMe(full_path: url)
+        .subscribe{
+            guard
+                let readMe = $0.element
+            else{
+                self.stopSpinner()
+                return
+            }
+            let variableData = BehaviorSubject(value: data)
+            let variableReadMe = BehaviorSubject(value: readMe)
+            self.viewModel = HomeDetailViewControllerModel(data: variableData, rmData: variableReadMe)
+            self.viewModel?.data.asObservable()
+            .subscribe{
+                self.draw($0.element)
+            }.disposed(by: self.disposebag)
+            
+            self.viewModel?.rmData.asObservable()
+            .subscribe{
+                self.drawContent($0.element)
+            }.disposed(by: self.disposebag)
+            self.stopSpinner()
+        }.disposed(by: disposebag)
     }
 }

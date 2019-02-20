@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import RxSwift
 
 struct HomeViewCustomCellModel{
     enum ownerShip : String{
@@ -25,8 +26,8 @@ struct HomeViewCustomCellModel{
         }
     }
     
-    var owner : ownerShip?
-    var data : Repository?
+    let owner : ownerShip
+    let data : Repository
 }
 
 class HomeViewCustomCell : UITableViewCell{
@@ -36,18 +37,19 @@ class HomeViewCustomCell : UITableViewCell{
     @IBOutlet weak var dateText: UILabel!
     @IBOutlet weak var state: UILabel!
 
-    var viewModel = HomeViewCustomCellModel()
+    var viewModel : HomeViewCustomCellModel?
     
-    func setData(_ repo : Repository){
-        viewModel.data = repo
-        nameText.text = viewModel.data!.full_name
-        mainText.text = viewModel.data!.decription ?? ""
-        dateText.text = viewModel.data!.updated_at?.dateCalcul()
-        profileImage.downloaded(from: viewModel.data!.owner!.avatar_url!)
+    func setData(_ repo : Repository, ownerShip : HomeViewCustomCellModel.ownerShip){
+        let viewModel = HomeViewCustomCellModel(owner: ownerShip, data: repo)
+        self.viewModel = viewModel
+        nameText.text = viewModel.data.full_name
+        mainText.text = viewModel.data.decription ?? ""
+        dateText.text = viewModel.data.updated_at?.dateCalcul()
+        profileImage.downloaded(from: viewModel.data.owner!.avatar_url!)
         profileImage.circularImage()
-        let owner = viewModel.owner?.express()
-        state.text = owner?.0
-        state.textColor = owner?.1
+        let owner = viewModel.owner.express()
+        state.text = owner.0
+        state.textColor = owner.1
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import RxSwift
 
 class DetailIssueViewController : UITableViewController{
     
@@ -18,6 +19,7 @@ class DetailIssueViewController : UITableViewController{
     
     var data : [Comment]?
     var issue : Issues?
+    let disposebag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -82,13 +84,17 @@ class DetailIssueViewController : UITableViewController{
     }
     
     func loadComments(userName : String, repoName : String, number : Int){
-        GithubAPI().getIssueCommentsByRepoAndNumber(info: (userName,repoName,number)){(comments) in
-            if let comments = comments{
-                self.data = comments
-                self.reloadData()
-            }
+        GithubAPI.API.getIssueCommentsByRepoAndNumber(info: (userName,repoName,number))
+        .subscribe{
             self.stopSpinner()
-        }
+            guard
+                let comments = $0.element
+            else{
+                return
+            }
+            self.data = comments
+            self.reloadData()
+        }.disposed(by: disposebag)
     }
     
     func reloadData(){

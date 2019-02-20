@@ -6,6 +6,7 @@
 //  Copyright © 2019 haneulPark. All rights reserved.
 //
 import UIKit
+import RxSwift
 
 class ProfileViewController : UITableViewController{
     @IBOutlet weak var name: UILabel!
@@ -15,6 +16,7 @@ class ProfileViewController : UITableViewController{
     @IBOutlet weak var profileImage: UIImageView!
     
     var user : Owner? = nil
+    let disposebag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,13 +25,17 @@ class ProfileViewController : UITableViewController{
     
     func loadData(){
         showSpinner(onView: self.view)
-        GithubAPI().getUserByToken{(user) in
-            if let user  = user{
-                self.user = user
-                self.reloadData()
-            }
+        GithubAPI.API.getUserByToken()
+        .subscribe{
             self.stopSpinner()
-        }
+            guard
+                let user = $0.element
+            else{
+                return
+            }
+            self.user = user
+            self.reloadData()
+        }.disposed(by: disposebag)
     }
     
     func updateUserInfo(){

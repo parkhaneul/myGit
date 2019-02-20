@@ -7,10 +7,12 @@
 //
 
 import Foundation
+import RxSwift
 
 struct Github{
-    var authentication : Authentication?
-    var network : NetworkAPI?
+    let authentication : Authentication?
+    let network : NetworkAPI = NetworkAPI.shared
+    let disposebag = DisposeBag()
     
     var defaultHeaders = [
         "Accept" : "application/vnd.github.v3+json",
@@ -18,55 +20,40 @@ struct Github{
         "Content-Type" : "application/json; charset=utf-8"
     ]
     
-    public init(authentication : Authentication? = shared_authentication){
+    private init(authentication : Authentication?){
         self.authentication = authentication
-        network = NetworkAPI()
     }
     
-    public func post(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
-        post(full_path: gitURL.base.rawValue + path,
-             parameters: parameters,
-             headers: headers,
-             completion: completion)
+    public static func api(authentication : Authentication? = shared_authentication) -> Github{
+        return Github(authentication: authentication)
     }
     
-    public func get(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
-        get(full_path: gitURL.base.rawValue + path,
-            parameters: parameters,
-            headers: headers,
-            completion: completion)
+    public func post(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil) -> Observable<Data>{
+        return post(full_path: gitURL.base.rawValue + path, parameters: parameters, headers: headers)
     }
     
-    public func post(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+    public func get(path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil) -> Observable<Data>{
+        return get(full_path: gitURL.base.rawValue + path, parameters: parameters, headers: headers)
+    }
+    
+    public func post(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil) -> Observable<Data>{
         let (newHeaders, newParameters) = addAuthenticationIfNeeded(headers: headers, parameters: parameters)
-        network?.post(url: full_path, parameters: newParameters, headers: newHeaders, completion: { dataResponse in
-            guard let data = dataResponse.data else {
-                completion(nil,dataResponse.error)
-                return
-            }
-            completion(data,dataResponse.error)
-        })
+        return self.network.post(url: full_path, parameters: newParameters, headers: newHeaders).map {
+            return $0.data ?? Data()
+        }
     }
     
-    public func getNonAuth(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
-        network?.get(url: full_path, parameters: parameters, headers: headers, completion: { dataResponse in
-            guard let data = dataResponse.data else {
-                completion(nil,dataResponse.error)
-                return
-            }
-            completion(data,dataResponse.error)
-        })
+    public func getNonAuth(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil) -> Observable<Data>{
+        return self.network.get(url: full_path, parameters: parameters, headers: headers).map {
+            return $0.data ?? Data()
+        }
     }
     
-    public func get(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil, completion: @escaping (Data?, Error?) -> ()){
+    public func get(full_path: String, parameters: [String : String]? = nil, headers: [String: String]? = nil) -> Observable<Data>{
         let (newHeaders, newParameters) = addAuthenticationIfNeeded(headers: headers, parameters: parameters)
-        network?.get(url: full_path, parameters: newParameters, headers: newHeaders, completion: { dataResponse in
-            guard let data = dataResponse.data else{
-                completion(nil,dataResponse.error)
-                return
-            }
-            completion(data,dataResponse.error)
-        })
+        return self.network.get(url: full_path, parameters: newParameters, headers: newHeaders).map {
+            return $0.data ?? Data()
+        }
     }
     
     func addAuthenticationIfNeeded(headers: [String : String]?, parameters: [String : String]?) -> (headers: [String : String]?, parameters: [String : String]?)
