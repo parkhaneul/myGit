@@ -7,14 +7,32 @@
 //
 
 import UIKit
+import RxSwift
 
 struct RepoContentViewControllerModel{
-    var data : [Contents]?
+    var _data : [Contents]?
+    var data : [Contents]?{
+        get{
+            var data = _data
+            data?.sort{
+                if $0.type! == $1.type!{
+                    return $0.name! < $1.name!
+                } else{
+                   return $0.type! < $1.type!
+                }
+            }
+            return data ?? []
+        }
+        set(newVal){
+            _data = newVal
+        }
+    }
     var path : String = ""
 }
 
 class RepoContentViewController : UITableViewController{
     var viewModel = RepoContentViewControllerModel()
+    let disposebag = DisposeBag()
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -63,13 +81,17 @@ class RepoContentViewController : UITableViewController{
     
     func readContents(){
         showSpinner(onView: self.view)
-        GithubAPI().getContentsByPath(path: viewModel.path, completion: {(content) in
-            if let content = content{
-                self.viewModel.data = content
-                self.reloadData()
-            }
+        GithubAPI.API.getContentsByPath(path: viewModel.path)
+        .subscribe{
             self.stopSpinner()
-        })
+            guard
+                let content = $0.element
+            else{
+                return
+            }
+            self.viewModel.data = content
+            self.reloadData()
+        }.disposed(by: disposebag)
     }
     
     func reloadData(){

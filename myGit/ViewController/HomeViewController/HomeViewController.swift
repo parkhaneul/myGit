@@ -7,74 +7,82 @@
 //
 
 import UIKit
+import RxSwift
 
 struct HomeViewControllerModel{
-    var data : [Repository]?{
+    var data : [Repository]{
         get{
-            var data = (ownerData ?? []) + (starredData ?? [])
+            var data = ownerData + starredData
             data = Array(Set(data))
             data.sort(by: {$0.updated_at! > $1.updated_at!})
             return data
         }
     }
-    var ownerData : [Repository]?
-    var starredData : [Repository]?
+    let ownerData : [Repository]
+    let starredData : [Repository]
 }
 
 class HomeViewController : UITableViewController{
-    var viewModel = HomeViewControllerModel()
+    var viewModel : HomeViewControllerModel?
+    let disposebag = DisposeBag()
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         showSpinner(onView: self.view)
-        loadUserRepos{
-            self.loadStarRepos()
-        }
+        loadUserRepos()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let detail = segue.destination as? HomeDetailViewController{
             let cell = sender as! HomeViewCustomCell
-            detail.setData(cell.viewModel.data!)
+            detail.setData(cell.viewModel!.data)
         }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.data?.count ?? 0
+        return viewModel?.data.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "RepoCell", for: indexPath) as? HomeViewCustomCell
-        if viewModel.data != nil{
-            if indexPath.row < viewModel.data!.count {
-                if viewModel.ownerData?.contains(viewModel.data![indexPath.row]) ?? false{
-                    cell?.viewModel.owner = .owner
+        if let viewModel = viewModel{
+            var ownerShip = HomeViewCustomCellModel.ownerShip.owner
+            if indexPath.row < viewModel.data.count {
+                if viewModel.ownerData.contains(viewModel.data[indexPath.row]){
+                    ownerShip = .owner
                 } else{
-                    cell?.viewModel.owner = .starred
+                    ownerShip = .starred
                 }
-                cell?.setData(viewModel.data![indexPath.row])
+                cell?.setData(viewModel.data[indexPath.row],ownerShip: ownerShip)
             }
         }
         return cell!
     }
     
-    func loadUserRepos(_ completion : @escaping () -> ()){
-        GithubAPI().getUserReposByToken { (repoList) in
-            if let repoList = repoList{
-                self.viewModel.ownerData = repoList
+    func loadUserRepos(){
+        GithubAPI.API.getUserReposByToken()
+        .subscribe{
+            guard
+                let repoList = $0.element
+            else{
+                return
             }
-            completion()
-        }
+            self.loadStarRepos(repoList)
+        }.disposed(by: disposebag)
     }
     
-    func loadStarRepos(){
-        GithubAPI().getUserStarred { (repoList) in
-            if let repoList = repoList{
-                self.viewModel.starredData = repoList
-            }
-            self.stopSpinner()
-            self.reloadData()
-        }
+    func loadStarRepos(_ ownerList : [Repository]){
+        GithubAPI.API.getUserStarred()
+            .subscribe{
+                guard
+                    let repoList = $0.element
+                    else{
+                        return
+                }
+                self.viewModel = HomeViewControllerModel(ownerData: ownerList, starredData: repoList)
+                self.reloadData()
+                self.stopSpinner()
+            }.disposed(by: disposebag)
     }
     
     func reloadData(){

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import RxSwift
 
 struct FileDetailViewControllerModel{
     var path : String = ""
@@ -19,6 +20,7 @@ class FileDetailViewController : UIViewController{
     @IBOutlet weak var scroll: UIScrollView!
     
     var viewModel = FileDetailViewControllerModel()
+    let disposebag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,13 +29,17 @@ class FileDetailViewController : UIViewController{
     
     func loadContents(){
         showSpinner(onView: self.view)
-        GithubAPI().getFileByPath(path: viewModel.path, completion: {(file) in
-            if let file = file{
-                self.viewModel.data = file
-                self.draw()
-            }
+        GithubAPI.API.getFileByPath(path: viewModel.path)
+        .subscribe{
             self.stopSpinner()
-        })
+            guard
+                let file = $0.element
+            else{
+                return
+            }
+            self.viewModel.data = file
+            self.draw()
+        }.disposed(by: disposebag)
     }
     
     func draw(){

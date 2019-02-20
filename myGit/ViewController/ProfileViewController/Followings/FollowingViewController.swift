@@ -7,10 +7,12 @@
 //
 
 import UIKit
+import RxSwift
 
 class FollowingViewController : UITableViewController{
     var data : [Owner]? = []
     var userData : [Owner] = []
+    let disposebag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,25 +37,33 @@ class FollowingViewController : UITableViewController{
     
     func loadFollowing(){
         showSpinner(onView: self.view)
-        GithubAPI().getFollowing {(following) in
-            if let following = following{
-                self.data = following
-                for user in following{
-                    self.loadUser(login: user.login!)
-                }
+        GithubAPI.API.getFollowing()
+        .subscribe{
+            guard
+                let following = $0.element
+            else{
+                self.stopSpinner()
+                return
             }
-            self.stopSpinner()
-        }
+            self.data = following
+            for user in following{
+                self.loadUser(login: user.login!)
+            }
+        }.disposed(by: disposebag)
     }
     
     func loadUser(login : String){
-        GithubAPI().getUserByLoginString(login){(user) in
-            if let user = user{
-                self.userData.append(user)
-                self.reloadData()
-            }
+        GithubAPI.API.getUserByLoginString(login)
+        .subscribe{
             self.stopSpinner()
-        }
+            guard
+                let user = $0.element
+            else{
+                return
+            }
+            self.userData.append(user)
+            self.reloadData()
+        }.disposed(by: disposebag)
     }
     
     func reloadData(){

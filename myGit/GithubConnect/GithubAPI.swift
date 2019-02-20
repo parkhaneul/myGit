@@ -7,162 +7,108 @@
 //
 
 import Foundation
+import RxSwift
 
 var shared_authentication : Authentication?
 
 struct GithubAPI{
-    public func createNewAuth(basicAuth : BasicAuthentication, completion : @escaping (Authorizations?) -> ()){
-        let api = Github(authentication: basicAuth)
-        var returnValue : Authorizations?
-        api.post(path: "/authorizations", parameters: ["note" : login.authNote.rawValue]) { (response, error) in
-            if let response = response{
-                returnValue = self.toModel(response)
-                completion(returnValue)
-            }
+    static let API = GithubAPI()
+    
+    let disposebag = DisposeBag()
+    
+    private init(){
+    }
+    
+    public func createNewAuth(basicAuth : BasicAuthentication) -> Observable<Authorizations>{
+        let api = Github.api(authentication: basicAuth)
+        return api.post(path: "/authorizations", parameters: ["note" : login.authNote.rawValue]).map{
+            return self.toModel($0)!
         }
     }
     
-    public func getAuth(basicAuth : BasicAuthentication, completion : @escaping(Authorizations?) -> ()){
-        let loginGit = Github(authentication: basicAuth)
-        var returnValue : Authorizations?
-        loginGit.get(path: "/authorizations"){(response,error) in
-            if let response = response{
-                let authList : [Authorizations]? = self.toModelArray(response)
-                if let authList = authList{
-                    for auth in authList{
-                        if auth.note == login.authNote.rawValue{
-                            returnValue = auth
-                        }
-                    }
-                    completion(returnValue)
-                }
-            }
+    public func getAuth(basicAuth : BasicAuthentication) -> Observable<[Authorizations]>{
+        let api = Github.api(authentication: basicAuth)
+        return api.get(path: "/authorizations").map{
+            return self.toModelArray($0) ?? []
         }
     }
     
-    public func getUserByToken(completion : @escaping(Owner?) -> ()){
-        var returnValue : Owner?
-        Github().get(path: "/user"){(response, error) in
-            if let response = response{
-                returnValue = self.toModel(response)
-            }
-            completion(returnValue)
+    public func getUserByToken() -> Observable<Owner>{
+        return Github.api().get(path: "/user").map{
+            return self.toModel($0)!
         }
     }
     
-    public func getIssueByToken(completion : @escaping([Issues]?) -> ()){
-        var returnValue : [Issues]?
-        Github().get(path: "/user/issues",parameters:["filter":"all", "sort":"update"]){(response,error) in
-            if let response = response{
-                returnValue = self.toModelArray(response)
-            }
-            completion(returnValue)
+    public func getIssueByToken() -> Observable<[Issues]>{
+        return Github.api().get(path: "/user/issues",parameters:["filter":"all", "sort":"update"]).map{
+            return self.toModelArray($0) ?? []
         }
     }
     
-    public func getClosedIssueByToken(completion : @escaping([Issues]?) -> ()){
-        var returnValue : [Issues]?
-        Github().get(path: "/user/issues",parameters:["filter":"all", "sort":"update","state":"closed"]){(response,error) in
-            if let response = response{
-                returnValue = self.toModelArray(response)
-            }
-            completion(returnValue)
+    public func getClosedIssueByToken() -> Observable<[Issues]>{
+        return Github.api().get(path: "/user/issues",parameters:["filter":"all", "sort":"update","state":"closed"]).map{
+            return self.toModelArray($0) ?? []
         }
     }
     
-    public func getIssueCommentsByRepoAndNumber(info : (String,String,Int), completion : @escaping([Comment]?) -> ()){
-        var returnValue : [Comment]?
-        Github().get(path: "/repos/\(info.0)/\(info.1)/issues/\(info.2)/comments"){(response,error) in
-            if let response = response{
-                returnValue = self.toModelArray(response)
-            }
-            completion(returnValue)
+    public func getIssueCommentsByRepoAndNumber(info : (String,String,Int)) -> Observable<[Comment]>{
+        return Github.api().get(path: "/repos/\(info.0)/\(info.1)/issues/\(info.2)/comments").map{
+            return self.toModelArray($0) ?? []
         }
     }
     
-    public func getUserReposByToken(completion : @escaping([Repository]?) -> ()){
-        var returnValue : [Repository]?
-        Github().get(path: "/user/repos", parameters:["sort":"updated"]){(response,error) in
-            if let response = response{
-                returnValue = self.toModelArray(response)
-            }
-            completion(returnValue)
+    public func getUserReposByToken() -> Observable<[Repository]>{
+        return Github.api().get(path: "/user/repos", parameters:["sort":"updated"]).map{
+            return self.toModelArray($0) ?? []
         }
     }
     
-    public func getUserStarred(completion : @escaping([Repository]?) -> ()){
-        var returnValue : [Repository]?
-        Github().get(path: "/user/starred", parameters:["sort":"updated"]){(response,error) in
-            if let response = response{
-                returnValue = self.toModelArray(response)
-            }
-            completion(returnValue)
+    public func getUserStarred() -> Observable<[Repository]>{
+        return Github.api().get(path: "/user/starred", parameters:["sort":"updated"]).map{
+            return self.toModelArray($0) ?? []
         }
     }
     
-    public func getDataFromString(URLString : String, completion : @escaping(Data?, Error?) -> Void){
-        Github().get(full_path: URLString, completion: completion)
+    public func getDataFromString(URLString : String) -> Observable<Data>{
+        return Github.api().get(full_path: URLString)
     }
     
-    public func getContentsByPath(path : String, completion : @escaping([Contents]?) -> ()){
-        var returnValue : [Contents]?
-        Github().get(path: "/repos/" + path){(response,error) in
-            if let response = response{
-                returnValue = self.toModelArray(response)
-                returnValue?.sort(by: { $1.type! > $0.type! })
-            }
-            completion(returnValue)
+    public func getContentsByPath(path : String) -> Observable<[Contents]>{
+        return Github.api().get(path: "/repos/" + path).map{
+            return self.toModelArray($0) ?? []
         }
     }
     
-    public func getFileByPath(path : String, completion : @escaping(Contents?) -> ()){
-        var returnValue : Contents?
-        Github().get(path: "/repos/" + path){(response,error) in
-            if let response = response{
-                returnValue = self.toModel(response)
-            }
-            completion(returnValue)
+    public func getFileByPath(path : String) -> Observable<Contents>{
+        return Github.api().get(path: "/repos/" + path).map{
+            return self.toModel($0)!
         }
     }
     
-    public func getFollowing(completion : @escaping([Owner]?) ->()){
-        var returnValue : [Owner]?
-        Github().get(path : "/user/following"){(response, error) in
-            if let response = response{
-                returnValue = self.toModelArray(response)
-            }
-            completion(returnValue)
+    public func getFollowing() -> Observable<[Owner]>{
+        return Github.api().get(path : "/user/following").map{
+            return self.toModelArray($0) ?? []
+        }
+
+    }
+    
+    public func getFollowers() -> Observable<[Owner]>{
+        return Github.api().get(path : "/user/followers").map{
+            return self.toModelArray($0) ?? []
         }
     }
     
-    public func getFollowers(completion : @escaping([Owner]?) ->()){
-        var returnValue : [Owner]?
-        Github().get(path : "/user/followers"){(response, error) in
-            if let response = response{
-                returnValue = self.toModelArray(response)
-            }
-            completion(returnValue)
+    public func getUserByLoginString(_ login : String) -> Observable<Owner>{
+        return Github.api().get(path: "/users/\(login)").map{
+            return self.toModel($0)!
         }
     }
     
-    public func getUserByLoginString(_ login : String, completion : @escaping(Owner?) -> ()){
-        var returnValue : Owner?
-        Github().get(path: "/users/\(login)"){(response,error) in
-            if let response = response{
-                returnValue = self.toModel(response)
-            }
-            completion(returnValue)
+    public func getReadMe(full_path url: String) -> Observable<Contents>{
+        return Github.api().get(full_path: url).map{
+            return self.toModel($0)!
+
         }
-    }
-    
-    public func getReadMe(full_path url: String, completion : @escaping(Contents?) -> ()){
-        var returnValue : Contents?
-        Github().get(full_path: url, completion: {(response, error) in
-            if let response = response{
-                returnValue = self.toModel(response)
-            }
-            completion(returnValue)
-        })
     }
     
     func toModel<E : Codable>(_ json : Data) -> E?{

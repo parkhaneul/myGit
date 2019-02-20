@@ -7,10 +7,12 @@
 //
 
 import UIKit
+import RxSwift
 
 class FollowersViewController : UITableViewController{
     var data : [Owner]? = []
     var userData : [Owner] = []
+    let disposebag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,25 +37,33 @@ class FollowersViewController : UITableViewController{
     
     func loadFollowers(){
         showSpinner(onView: self.view)
-        GithubAPI().getFollowers {(followers) in
-            if let followers = followers{
-                self.data = followers
-                for follower in followers{
-                    self.loadUser(login: follower.login!)
+        GithubAPI.API.getFollowers()
+            .subscribe{
+                guard
+                    let followers = $0.element
+                    else{
+                        self.stopSpinner()
+                        return
                 }
-            }
-            self.stopSpinner()
-        }
+                self.data = followers
+                for user in followers{
+                    self.loadUser(login: user.login!)
+                }
+            }.disposed(by: disposebag)
     }
     
     func loadUser(login : String){
-        GithubAPI().getUserByLoginString(login){(user) in
-            if let user = user{
+        GithubAPI.API.getUserByLoginString(login)
+            .subscribe{
+                self.stopSpinner()
+                guard
+                    let user = $0.element
+                    else{
+                        return
+                }
                 self.userData.append(user)
                 self.reloadData()
-            }
-            self.stopSpinner()
-        }
+        }.disposed(by: disposebag)
     }
     
     func reloadData(){

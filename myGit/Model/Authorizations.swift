@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Authorizations : Codable{
+struct Authorizations : Codable,Equatable{
     let id: Int?
     let url: String?
     let token: String?
@@ -16,4 +16,8 @@ struct Authorizations : Codable{
     let note: String?
     let updated_at: String?
     let created_at: String?
+    
+    static func == (lhs: Authorizations, rhs: Authorizations) -> Bool {
+        return lhs.id == rhs.id
+    }
 }

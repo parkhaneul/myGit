@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import RxSwift
 
 class CloseIssueViewController : UITableViewController{
     var _data : [Issues]?
@@ -21,6 +22,7 @@ class CloseIssueViewController : UITableViewController{
             }
         }
     }
+    let disposebag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,12 +64,16 @@ class CloseIssueViewController : UITableViewController{
     
     func loadIssue(){
         showSpinner(onView: self.view)
-        GithubAPI().getClosedIssueByToken{(issueList) in
-            if let issueList = issueList{
-                self.data = issueList
-            }
+        GithubAPI.API.getClosedIssueByToken()
+        .subscribe{
             self.stopSpinner()
-        }
+            guard
+                let issueList = $0.element
+            else{
+                return
+            }
+            self.data = issueList
+        }.disposed(by: disposebag)
     }
     
     func reloadData(){
